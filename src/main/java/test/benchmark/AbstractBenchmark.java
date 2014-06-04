@@ -1,5 +1,7 @@
 package test.benchmark;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
@@ -12,111 +14,52 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 abstract class AbstractBenchmark {
 
     /**
-     * Benchumark.
-     *
-     * @param mode the mode
-     * @throws Exception
-     */
-    public void benchumark(final Mode mode) throws Exception {
-        switch (mode) {
-        case W:
-            benchmarkWriteOnly();
-            break;
-        case RW:
-            benchmarkReadWrite();
-            break;
-        default:
-            break;
-        }
-    }
-
-    /**
-     * Benchmark read write.
-     *
-     * @throws Exception the exception
-     */
-    public void benchmarkReadWrite() throws Exception {
-        final StringBuilder builder = new StringBuilder();
-        builder.append("[Mode : ReadWrite; ")
-                .append("Thread count : " + numThreads + "] ")
-                .append(System.lineSeparator());
-        builder.append("Warming up (" + runCount + " rounds)");
-        System.out.println(builder.toString());
-        // do warming up
-        runReadWrite();
-
-        // Clear measurements
-        statistics.clear();
-
-        System.out.println("Benchmark runs (" + runCount + " rounds)");
-        runReadWrite();
-
-        System.out
-                .printf("Mean: %.0f ms, stdev: %.0f ms (min: %.0f, max: %.0f)\n",
-                        statistics.getMean(),
-                        statistics.getStandardDeviation(), statistics.getMin(),
-                        statistics.getMax());
-    }
-
-    /**
      * Benchmark write only.
      *
      * @throws Exception the exception
      */
-    public void benchmarkWriteOnly() throws Exception {
+    public void benchmark() throws Exception {
         final StringBuilder builder = new StringBuilder();
-        builder.append("[Mode : WriteOnly; ")
-                .append("Thread count : " + numThreads + "] ")
+        builder.append("[Counter type : " + getCounterName() + ";")
+                .append("Read thread count : " + numReadThreads + ";")
+                .append("Write thread count : " + numWriteThreads + "]")
                 .append(System.lineSeparator());
         builder.append("Warming up (" + runCount + " rounds)");
         System.out.println(builder.toString());
         // do warming up
-        runWriteOnly();
+        doRun();
 
         // Clear measurements
-        statistics.clear();
+        writeStatistics.clear();
+        readStatistics.clear();
+        timeStatistics.clear();
 
         System.out.println("Benchmark runs (" + runCount + " rounds)");
-        runWriteOnly();
+        doRun();
 
-        System.out
-                .printf("Mean: %.0f ops/ms, stdev: %.0f ops/ms (min: %.0f, max: %.0f)\n",
-                        statistics.getMean(),
-                        statistics.getStandardDeviation(), statistics.getMin(),
-                        statistics.getMax());
+        reportStatistics();
+
     }
 
     /**
-     * Run read and write mode.
-     *
-     * @throws Exception the exception
+     * Report statistics.
      */
-    private void runReadWrite() throws Exception {
-        // init counter
-        initializeCounter();
-
-        for (int runNumber = 0; runNumber < runCount; runNumber++) {
-            System.out.printf("Iteration %3d: ", runNumber);
-
-            clearCounter();
-
-            createAndStartReadWriteThread();
-            final long startTime = System.nanoTime();
-
-            // Trigger start
-            waitForBarrier();
-            // Wait until all threads are finished
-            waitForBarrier();
-
-            final long endTime = System.nanoTime();
-            join();
-
-            double duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
-            System.out.printf("%.0f ms\n", duration);
-
-            statistics.addValue(duration);
-            Thread.sleep(500);
-        }
+    private void reportStatistics() {
+        System.out
+                .printf("***Write Options Statistic*** \nMean: %.0f wops/ms, stdev: %.0f wops/ms (min: %.0f, max: %.0f)\n",
+                        writeStatistics.getMean(),
+                        writeStatistics.getStandardDeviation(), writeStatistics.getMin(),
+                        writeStatistics.getMax());
+        System.out
+                .printf("***Read Options Statistic*** \nMean: %.0f wops/ms, stdev: %.0f wops/ms (min: %.0f, max: %.0f)\n",
+                        readStatistics.getMean(),
+                        readStatistics.getStandardDeviation(), readStatistics.getMin(),
+                        readStatistics.getMax());
+        System.out
+                .printf("***Duration Statistic*** \nMean: %.0f ms, stdev: %.0f ms (min: %.0f, max: %.0f)\n",
+                        timeStatistics.getMean(),
+                        timeStatistics.getStandardDeviation(), timeStatistics.getMin(),
+                        timeStatistics.getMax());
     }
 
     /**
@@ -124,7 +67,7 @@ abstract class AbstractBenchmark {
      *
      * @throws Exception the exception
      */
-    private void runWriteOnly() throws Exception {
+    private void doRun() throws Exception {
         // init counter
         initializeCounter();
 
@@ -132,7 +75,7 @@ abstract class AbstractBenchmark {
             System.out.printf("Iteration %3d: ", runNumber);
             clearCounter();
 
-            createAndStartWriteOnlyThread();
+            createAndStartThreads();
             long startTime = System.nanoTime();
 
             // Trigger start
@@ -145,26 +88,18 @@ abstract class AbstractBenchmark {
             long endTime = System.nanoTime();
             join();
 
-            double duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
-            double operationsPerMillisecond = finalValue / duration;
-            System.out.printf("%6.0f ops/ms (%.0f ms)\n",
-                    operationsPerMillisecond, duration);
-            statistics.addValue(operationsPerMillisecond);
+            final double duration = TimeUnit.NANOSECONDS.toMillis(endTime - startTime);
+            double writeOperationsPerMillisecond = finalValue / duration;
+            double readOperationsPerMillisecond = addCount * numReadThreads / duration;
+            System.out.printf("%6.0f wops/ms %6.0f rops/ms (%.0f ms)\n",
+                    writeOperationsPerMillisecond, readOperationsPerMillisecond, duration);
+
+            writeStatistics.addValue(writeOperationsPerMillisecond);
+            readStatistics.addValue(readOperationsPerMillisecond);
+            timeStatistics.addValue(duration);
 
             Thread.sleep(500);
         }
-    }
-
-    /**
-     * Creates the and start read write thread.
-     */
-    private void createAndStartReadWriteThread() {
-        for (int i = 0; i < numThreads; i++) {
-            final BlockBenchumarkThread thread = createReadWriteThread();
-            threads[i] = new Thread(thread);
-            threads[i].start();
-        }
-
     }
 
     /**
@@ -172,21 +107,29 @@ abstract class AbstractBenchmark {
      *
      * @throws Exception the exception
      */
-    private void createAndStartWriteOnlyThread() {
-        for (int i = 0; i < numThreads; i++) {
-            final IncrementingBenchmarkThread thread = createWriteOnlyThread();
-            threads[i] = new Thread(thread);
-            threads[i].start();
+    private void createAndStartThreads() {
+        threads.clear();
+
+        for (int i = 0; i < numReadThreads; i++) {
+            final ReadOnlyThread thread = createReadOnlyThread();
+            threads.add(new Thread(thread));
+        }
+        for (int i = 0; i < numWriteThreads; i++) {
+            final WriteOnlyThread thread = createWriteOnlyThread();
+            threads.add(new Thread(thread));
+        }
+        for (final Thread thread : threads) {
+            thread.start();
         }
     }
 
     /**
-     * Creates the read write thread.
+     * Creates the read only thread.
      *
-     * @return the block benchumark thread
+     * @return the read only thread
      */
-    private BlockBenchumarkThread createReadWriteThread() {
-        return new BlockBenchumarkThread(this);
+    private ReadOnlyThread createReadOnlyThread() {
+        return new ReadOnlyThread(this);
     }
 
     /**
@@ -194,8 +137,8 @@ abstract class AbstractBenchmark {
      *
      * @return the incrementing benchmark thread
      */
-    private IncrementingBenchmarkThread createWriteOnlyThread() {
-        return new IncrementingBenchmarkThread(this);
+    private WriteOnlyThread createWriteOnlyThread() {
+        return new WriteOnlyThread(this);
     }
 
     /**
@@ -219,6 +162,13 @@ abstract class AbstractBenchmark {
      * @return the counter value
      */
     protected abstract long getCounterValue();
+
+    /**
+     * Gets the counter name.
+     *
+     * @return the counter name
+     */
+    protected abstract String getCounterName();
 
     /**
      * Wait for barrier.
@@ -263,33 +213,19 @@ abstract class AbstractBenchmark {
     }
 
     /**
-     * Gets the mode, the second command line argument.
-     *
-     * @param args the args
-     * @return the mode of test.
-     */
-    public static Mode getMode(final String[] args) {
-        Mode mode = Mode.W;
-        try {
-            mode = Mode.valueOf(args[1]);
-        } catch (Exception e) {
-            System.out
-                    .println("Second command line argument is mode, should be 'WriteOnly' or 'ReadWrite'.");
-        }
-        return mode;
-    }
-
-    /**
      * Instantiates a new abstract benchmark.
      *
-     * @param numThreads the num threads
+     * @param numReadThreads the num threads
      */
-    public AbstractBenchmark(int numThreads) {
-        this.numThreads = numThreads;
-        barrier = new CyclicBarrier(numThreads + 1);
+    public AbstractBenchmark(final int numReadThreads, final int numWriteThreads) {
+        this.numReadThreads = numReadThreads;
+        this.numWriteThreads = numWriteThreads;
+        barrier = new CyclicBarrier(numReadThreads + numWriteThreads + 1);
 
-        threads = new Thread[numThreads];
-        statistics = new DescriptiveStatistics(runCount);
+        threads = new LinkedList<>();
+        writeStatistics = new DescriptiveStatistics(runCount);
+        readStatistics = new DescriptiveStatistics(runCount);
+        timeStatistics = new DescriptiveStatistics(runCount);
     }
 
     /** The add count. */
@@ -299,7 +235,10 @@ abstract class AbstractBenchmark {
     protected final int tokenSize = addCount / 50;
 
     /** The num threads. */
-    protected final int numThreads;
+    protected final int numReadThreads;
+
+    /** The num write threads. */
+    protected final int numWriteThreads;
 
     /** The run count. */
     private final int runCount = 20;
@@ -308,8 +247,14 @@ abstract class AbstractBenchmark {
     private final CyclicBarrier barrier;
 
     /** The threads. */
-    private final Thread[] threads;
+    private final List<Thread> threads;
 
     /** The statistics. */
-    private final DescriptiveStatistics statistics;
+    private final DescriptiveStatistics writeStatistics;
+
+    /** The read statistics. */
+    private final DescriptiveStatistics readStatistics;
+
+    /** The time statistics. */
+    private final DescriptiveStatistics timeStatistics;
 }

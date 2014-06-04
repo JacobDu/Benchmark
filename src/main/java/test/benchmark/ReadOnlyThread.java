@@ -1,19 +1,21 @@
 package test.benchmark;
 
-final class IncrementingBenchmarkThread implements Runnable {
+class ReadOnlyThread implements Runnable {
 
+    @Override
     public void run() {
         controller.waitForBarrier();
         for (int i = 0; i < controller.addCount; i++) {
-            controller.incrementCounter();
+            controller.getCounterValue();
         }
         controller.waitForBarrier();
     }
 
-    IncrementingBenchmarkThread(AbstractBenchmark controller) {
+    ReadOnlyThread(AbstractBenchmark controller) {
         this.controller = controller;
     }
 
     /** The controller. */
     private AbstractBenchmark controller;
+
 }

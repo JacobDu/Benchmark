@@ -3,7 +3,20 @@ package test.benchmark;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class ReentrantLockBenchmark extends AbstractBenchmark {
+/**
+ * The Class ReentrantLockBenchmark.
+ */
+class ReentrantLockBenchmark extends AbstractBenchmark {
+
+    /**
+     * Instantiates a new reentrant lock benchmark.
+     *
+     * @param numReadThreads the num read threads
+     * @param numWriteThreads the num write threads
+     */
+    public ReentrantLockBenchmark(int numReadThreads, int numWriteThreads) {
+        super(numReadThreads, numWriteThreads);
+    }
 
     @Override
     protected void initializeCounter() {
@@ -40,8 +53,9 @@ public class ReentrantLockBenchmark extends AbstractBenchmark {
         }
     }
 
-    public ReentrantLockBenchmark(int numThreads) {
-        super(numThreads);
+    @Override
+    protected String getCounterName() {
+        return "Reentrant Lock Counter";
     }
 
     /** The counter. */
@@ -52,15 +66,6 @@ public class ReentrantLockBenchmark extends AbstractBenchmark {
 
     {
         lock = new ReentrantLock();
-    }
-
-    public static void main(String[] args) {
-        final ReentrantLockBenchmark benchmark = new ReentrantLockBenchmark(getNumThreads(args));
-        try {
-            benchmark.benchmarkWriteOnly();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }

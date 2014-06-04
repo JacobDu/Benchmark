@@ -2,7 +2,21 @@ package test.benchmark;
 
 import java.util.concurrent.atomic.LongAdder;
 
-public final class LongAdderBenchmark extends AbstractBenchmark {
+/**
+ * The Class LongAdderBenchmark.
+ */
+final class LongAdderBenchmark extends AbstractBenchmark {
+
+    /**
+     * Instantiates a new long adder benchmark.
+     *
+     * @param numReadThreads the num read threads
+     * @param numWriteThreads the num write threads
+     */
+    public LongAdderBenchmark(int numReadThreads, int numWriteThreads) {
+        super(numReadThreads, numWriteThreads);
+    }
+
     @Override
     protected void initializeCounter() {
         counter = new LongAdder();
@@ -23,19 +37,10 @@ public final class LongAdderBenchmark extends AbstractBenchmark {
         return counter.longValue();
     }
 
-    public LongAdderBenchmark(int numThreads) {
-        super(numThreads);
+    @Override
+    protected String getCounterName() {
+        return "Long Adder Counter";
     }
 
     private LongAdder counter;
-
-    public static void main(String[] args) {
-        final LongAdderBenchmark benchmark = new LongAdderBenchmark(
-                getNumThreads(args));
-        try {
-            benchmark.benchmarkWriteOnly();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

@@ -2,7 +2,14 @@ package test.benchmark;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-public final class AtomicLongBenchmark extends AbstractBenchmark {
+/**
+ * The Class AtomicLongBenchmark.
+ */
+final class AtomicLongBenchmark extends AbstractBenchmark {
+
+    public AtomicLongBenchmark(int numReadThreads, int numWriteThreads) {
+        super(numReadThreads, numWriteThreads);
+    }
 
     @Override
     protected void initializeCounter() {
@@ -24,18 +31,11 @@ public final class AtomicLongBenchmark extends AbstractBenchmark {
         return counter.longValue();
     }
 
-    public AtomicLongBenchmark(int numThreads) {
-        super(numThreads);
+    @Override
+    protected String getCounterName() {
+        return "Atomic Counter";
     }
 
     private AtomicLong counter;
 
-    public static void main(String[] args) {
-        AtomicLongBenchmark benchmark = new AtomicLongBenchmark(getNumThreads(args));
-        try {
-            benchmark.benchumark(getMode(args));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 }

@@ -2,7 +2,11 @@ package test.benchmark;
 
 import java.util.concurrent.locks.StampedLock;
 
-public class StampedLockBenchmark extends AbstractBenchmark {
+class StampedLockBenchmark extends AbstractBenchmark {
+
+    public StampedLockBenchmark(int numReadThreads, int numWriteThreads) {
+        super(numReadThreads, numWriteThreads);
+    }
 
     @Override
     protected void initializeCounter() {
@@ -40,8 +44,9 @@ public class StampedLockBenchmark extends AbstractBenchmark {
         }
     }
 
-    public StampedLockBenchmark(int numThreads) {
-        super(numThreads);
+    @Override
+    protected String getCounterName() {
+        return "Stamped Lock Counter";
     }
 
     private long counter;
@@ -50,15 +55,6 @@ public class StampedLockBenchmark extends AbstractBenchmark {
 
     {
         lock = new StampedLock();
-    }
-
-    public static void main(String[] args) {
-        final StampedLockBenchmark benchmark = new StampedLockBenchmark(getNumThreads(args));
-        try {
-            benchmark.benchmarkWriteOnly();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }

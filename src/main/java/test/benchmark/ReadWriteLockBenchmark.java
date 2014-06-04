@@ -4,7 +4,20 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
-public final class ReadWriteLockBenchmark extends AbstractBenchmark {
+/**
+ * The Class ReadWriteLockBenchmark.
+ */
+final class ReadWriteLockBenchmark extends AbstractBenchmark {
+
+    /**
+     * Instantiates a new read write lock benchmark.
+     *
+     * @param numReadThreads the num read threads
+     * @param numWriteThreads the num write threads
+     */
+    public ReadWriteLockBenchmark(int numReadThreads, int numWriteThreads) {
+        super(numReadThreads, numWriteThreads);
+    }
 
     @Override
     protected void initializeCounter() {
@@ -42,8 +55,9 @@ public final class ReadWriteLockBenchmark extends AbstractBenchmark {
         }
     }
 
-    public ReadWriteLockBenchmark(int numThreads) {
-        super(numThreads);
+    @Override
+    protected String getCounterName() {
+        return "Read Write Lock Counter";
     }
 
     private long counter;
@@ -58,15 +72,6 @@ public final class ReadWriteLockBenchmark extends AbstractBenchmark {
         lock = new ReentrantReadWriteLock();
         readLock = lock.readLock();
         writeLock = lock.writeLock();
-    }
-
-    public static void main(String[] args) {
-        final ReadWriteLockBenchmark benchmark = new ReadWriteLockBenchmark(getNumThreads(args));
-        try {
-            benchmark.benchmarkWriteOnly();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
 }

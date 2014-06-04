@@ -2,7 +2,7 @@ package test.benchmark;
 
 import java.util.concurrent.TimeUnit;
 
-final class BlockBenchumarkThread implements Runnable {
+final class ReadWriteThread implements Runnable {
 
     @Override
     public void run() {
@@ -47,10 +47,10 @@ final class BlockBenchumarkThread implements Runnable {
 
     private void resetToken() {
         token = controller.tokenSize;
-        expect += token * controller.numThreads;
+        expect += token * controller.numReadThreads;
     }
 
-    BlockBenchumarkThread(final AbstractBenchmark controller) {
+    ReadWriteThread(final AbstractBenchmark controller) {
         this.controller = controller;
     }
 
