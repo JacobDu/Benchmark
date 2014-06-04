@@ -33,7 +33,7 @@ public final class AtomicLongBenchmark extends AbstractBenchmark {
     public static void main(String[] args) {
         AtomicLongBenchmark benchmark = new AtomicLongBenchmark(getNumThreads(args));
         try {
-            benchmark.benchmarkWriteOnly();
+            benchmark.benchumark(getMode(args));
         } catch (Exception e) {
             e.printStackTrace();
         }
