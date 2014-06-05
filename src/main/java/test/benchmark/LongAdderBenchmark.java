@@ -12,9 +12,10 @@ final class LongAdderBenchmark extends AbstractBenchmark {
      *
      * @param numReadThreads the num read threads
      * @param numWriteThreads the num write threads
+     * @param flag
      */
-    public LongAdderBenchmark(int numReadThreads, int numWriteThreads) {
-        super(numReadThreads, numWriteThreads);
+    public LongAdderBenchmark(int numReadThreads, int numWriteThreads, boolean flag) {
+        super(numReadThreads, numWriteThreads, flag);
     }
 
     @Override

@@ -1,5 +1,8 @@
 package test.benchmark;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
@@ -37,21 +40,40 @@ abstract class AbstractBenchmark {
         System.out.println("Benchmark runs (" + runCount + " rounds)");
         doRun();
 
-        reportStatistics();
+        doReport();
 
+        if (flag) {
+            doExport();
+        }
+
+    }
+
+    /**
+     * Do export.
+     * 
+     * @throws IOException
+     */
+    private void doExport() throws IOException {
+        final String fileName = getCounterName().replaceAll(" ", "") + ".dat";
+        final File file = new File(fileName);
+        try (final FileWriter writer = new FileWriter(file, true)) {
+            // numReadThread,numWriteThread,rops/ms,wops/ms
+            writer.write(String.format("%d,%d,%.0f,%.0f%n", numReadThreads, numWriteThreads,
+                    readStatistics.getMean(), writeStatistics.getMean()));
+        }
     }
 
     /**
      * Report statistics.
      */
-    private void reportStatistics() {
+    private void doReport() {
         System.out
                 .printf("***Write Options Statistic*** \nMean: %.0f wops/ms, stdev: %.0f wops/ms (min: %.0f, max: %.0f)\n",
                         writeStatistics.getMean(),
                         writeStatistics.getStandardDeviation(), writeStatistics.getMin(),
                         writeStatistics.getMax());
         System.out
-                .printf("***Read Options Statistic*** \nMean: %.0f wops/ms, stdev: %.0f wops/ms (min: %.0f, max: %.0f)\n",
+                .printf("***Read Options Statistic*** \nMean: %.0f rops/ms, stdev: %.0f rops/ms (min: %.0f, max: %.0f)\n",
                         readStatistics.getMean(),
                         readStatistics.getStandardDeviation(), readStatistics.getMin(),
                         readStatistics.getMax());
@@ -60,6 +82,7 @@ abstract class AbstractBenchmark {
                         timeStatistics.getMean(),
                         timeStatistics.getStandardDeviation(), timeStatistics.getMin(),
                         timeStatistics.getMax());
+
     }
 
     /**
@@ -217,9 +240,10 @@ abstract class AbstractBenchmark {
      *
      * @param numReadThreads the num threads
      */
-    public AbstractBenchmark(final int numReadThreads, final int numWriteThreads) {
+    public AbstractBenchmark(final int numReadThreads, final int numWriteThreads, final boolean flag) {
         this.numReadThreads = numReadThreads;
         this.numWriteThreads = numWriteThreads;
+        this.flag = flag;
         barrier = new CyclicBarrier(numReadThreads + numWriteThreads + 1);
 
         threads = new LinkedList<>();
@@ -248,6 +272,9 @@ abstract class AbstractBenchmark {
 
     /** The threads. */
     private final List<Thread> threads;
+
+    /** The flags. */
+    private final boolean flag;
 
     /** The statistics. */
     private final DescriptiveStatistics writeStatistics;

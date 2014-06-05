@@ -14,8 +14,8 @@ class ReentrantLockBenchmark extends AbstractBenchmark {
      * @param numReadThreads the num read threads
      * @param numWriteThreads the num write threads
      */
-    public ReentrantLockBenchmark(int numReadThreads, int numWriteThreads) {
-        super(numReadThreads, numWriteThreads);
+    public ReentrantLockBenchmark(int numReadThreads, int numWriteThreads, boolean flag) {
+        super(numReadThreads, numWriteThreads, flag);
     }
 
     @Override

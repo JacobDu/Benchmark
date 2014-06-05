@@ -15,8 +15,8 @@ final class ReadWriteLockBenchmark extends AbstractBenchmark {
      * @param numReadThreads the num read threads
      * @param numWriteThreads the num write threads
      */
-    public ReadWriteLockBenchmark(int numReadThreads, int numWriteThreads) {
-        super(numReadThreads, numWriteThreads);
+    public ReadWriteLockBenchmark(int numReadThreads, int numWriteThreads, boolean flag) {
+        super(numReadThreads, numWriteThreads, flag);
     }
 
     @Override

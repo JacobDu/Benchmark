@@ -4,8 +4,8 @@ import java.util.concurrent.locks.StampedLock;
 
 class StampedLockBenchmark extends AbstractBenchmark {
 
-    public StampedLockBenchmark(int numReadThreads, int numWriteThreads) {
-        super(numReadThreads, numWriteThreads);
+    public StampedLockBenchmark(int numReadThreads, int numWriteThreads, boolean flag) {
+        super(numReadThreads, numWriteThreads, flag);
     }
 
     @Override

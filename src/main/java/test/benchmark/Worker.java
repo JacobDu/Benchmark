@@ -7,7 +7,8 @@ public final class Worker {
      * The main method.
      * args[0] the counter type
      * args[1] the number of read thread
-     * args[2] the number of write thead
+     * args[2] the number of write thread
+     * args[3] if output data
      * </pre>
      *
      * @param args the arguments
@@ -17,25 +18,29 @@ public final class Worker {
         final CounterType type = CounterType.valueOf(args[0]);
         final int numReadThreads = Integer.valueOf(args[1]);
         final int numWriteThreads = Integer.valueOf(args[2]);
+        final boolean flag = Boolean.valueOf(args[3]);
 
+        AbstractBenchmark benchmark = null;
         switch (type) {
         case Adder:
-            new LongAdderBenchmark(numReadThreads, numWriteThreads).benchmark();
+            benchmark = new LongAdderBenchmark(numReadThreads, numWriteThreads, flag);
             break;
         case Atomic:
-            new AtomicLongBenchmark(numReadThreads, numWriteThreads).benchmark();
+            benchmark = new AtomicLongBenchmark(numReadThreads, numWriteThreads, flag);
             break;
         case ReadWriteLock:
-            new ReadWriteLockBenchmark(numReadThreads, numWriteThreads).benchmark();
+            benchmark = new ReadWriteLockBenchmark(numReadThreads, numWriteThreads, flag);
             break;
         case ReentrantLock:
-            new ReentrantLockBenchmark(numReadThreads, numWriteThreads).benchmark();
+            benchmark = new ReentrantLockBenchmark(numReadThreads, numWriteThreads, flag);
             break;
         case StampedLock:
-            new StampedLockBenchmark(numReadThreads, numWriteThreads).benchmark();
+            benchmark = new StampedLockBenchmark(numReadThreads, numWriteThreads, flag);
             break;
         default:
             break;
         }
+
+        benchmark.benchmark();
     }
 }

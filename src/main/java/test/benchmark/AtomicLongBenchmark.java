@@ -7,8 +7,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 final class AtomicLongBenchmark extends AbstractBenchmark {
 
-    public AtomicLongBenchmark(int numReadThreads, int numWriteThreads) {
-        super(numReadThreads, numWriteThreads);
+    public AtomicLongBenchmark(int numReadThreads, int numWriteThreads, boolean flag) {
+        super(numReadThreads, numWriteThreads, flag);
     }
 
     @Override
