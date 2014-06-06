@@ -46,7 +46,7 @@ class StampedLockBenchmark extends AbstractBenchmark {
             try {
                 result = counter;
             } finally {
-                lock.unlock(stamp);
+                lock.unlockRead(stamp);
             }
         }
         return result;
