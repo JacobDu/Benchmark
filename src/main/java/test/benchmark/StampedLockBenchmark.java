@@ -36,12 +36,20 @@ class StampedLockBenchmark extends AbstractBenchmark {
 
     @Override
     protected long getCounterValue() {
-        final long stamp = lock.readLock();
-        try {
-            return counter;
-        } finally {
-            lock.unlockRead(stamp);
+        long result = counter;
+        // 乐观读锁
+        long stamp = lock.tryOptimisticRead();
+        // 检查是否有其他写操作
+        if (!lock.validate(stamp)) {
+            // 如果没有冲突,取得悲观读锁
+            stamp = lock.readLock();
+            try {
+                result = counter;
+            } finally {
+                lock.unlock(stamp);
+            }
         }
+        return result;
     }
 
     @Override
