@@ -1,4 +1,4 @@
-function [A,L,R,S] = show()
+function [Y] = show()
 	figure(3);
 	A = load('AtomicCounter.dat');
 	L = load('LongAdderCounter.dat');
@@ -9,7 +9,7 @@ function [A,L,R,S] = show()
 	b = bar(Y);
 	grid on;
 	ch = get(b,'children');
-	set(gca,'XTickLabel',[0,2,4,8,16,32]);
+	set(gca,'XTickLabel',{'0','W,R=2','W,R=4','W,R=8','W,R=16','W,R=32'});
 	legend('Atomic','Adder','ReadWriteLock','StampedLock');
 	xlabel('number of thread');
 	ylabel('ops/ms');
