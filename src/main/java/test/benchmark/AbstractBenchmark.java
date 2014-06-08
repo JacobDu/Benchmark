@@ -96,6 +96,7 @@ abstract class AbstractBenchmark {
 
         for (int runNumber = 0; runNumber < runCount; runNumber++) {
             System.out.printf("Iteration %3d: ", runNumber);
+
             clearCounter();
 
             createAndStartThreads();
