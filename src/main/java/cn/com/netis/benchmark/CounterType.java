@@ -1,4 +1,4 @@
-package test.benchmark;
+package cn.com.netis.benchmark;
 
 // TODO: Auto-generated Javadoc
 /**

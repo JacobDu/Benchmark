@@ -1,4 +1,4 @@
-package test.benchmark;
+package cn.com.netis.benchmark;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;

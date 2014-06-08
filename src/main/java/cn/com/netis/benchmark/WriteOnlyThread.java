@@ -1,4 +1,4 @@
-package test.benchmark;
+package cn.com.netis.benchmark;
 
 final class WriteOnlyThread implements Runnable {
 

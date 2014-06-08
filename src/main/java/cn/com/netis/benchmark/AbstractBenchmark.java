@@ -1,4 +1,4 @@
-package test.benchmark;
+package cn.com.netis.benchmark;
 
 import java.io.File;
 import java.io.FileWriter;
